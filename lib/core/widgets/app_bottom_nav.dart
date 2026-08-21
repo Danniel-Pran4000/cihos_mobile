@@ -3,9 +3,9 @@ import 'package:go_router/go_router.dart';
 
 import '../router/app_routes.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_motion.dart';
 
-/// The five-tab bar along the bottom of the main screens.
+/// The five-tab navigation bar with Beranda (Home) in the center,
+/// where the selected tab has a circle surrounding its icon.
 class AppBottomNav extends StatelessWidget {
   const AppBottomNav({super.key, required this.current});
 
@@ -24,13 +24,12 @@ class AppBottomNav extends StatelessWidget {
           ),
         ],
       ),
-      // SafeArea wraps the row rather than sitting inside a fixed-height box,
-      // so the gesture inset is added to the bar instead of eating into it.
       child: SafeArea(
         top: false,
         child: SizedBox(
           height: 64,
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               for (final tab in AppTab.values)
                 Expanded(
@@ -51,28 +50,47 @@ class AppBottomNav extends StatelessWidget {
 }
 
 enum AppTab {
-  home(label: 'Beranda', icon: Icons.home, route: AppRoutes.home),
   appointments(
-    label: 'Jadwal Temu',
-    icon: Icons.calendar_month,
+    label: 'Jadwal',
+    outlineIcon: Icons.calendar_month_outlined,
+    fillIcon: Icons.calendar_month,
     route: AppRoutes.appointments,
   ),
   health(
     label: 'Sehat-mu',
-    icon: Icons.favorite_outline,
+    outlineIcon: Icons.favorite_outline,
+    fillIcon: Icons.favorite,
     route: AppRoutes.health,
   ),
-  history(label: 'Riwayat', icon: Icons.history, route: AppRoutes.history),
-  profile(label: 'Profil', icon: Icons.person_outline, route: AppRoutes.profile);
+  home(
+    label: 'Beranda',
+    outlineIcon: Icons.home_outlined,
+    fillIcon: Icons.home,
+    route: AppRoutes.home,
+  ),
+  history(
+    label: 'Riwayat',
+    outlineIcon: Icons.history_outlined,
+    fillIcon: Icons.history,
+    route: AppRoutes.history,
+  ),
+  profile(
+    label: 'Profil',
+    outlineIcon: Icons.person_outline,
+    fillIcon: Icons.person,
+    route: AppRoutes.profile,
+  );
 
   const AppTab({
     required this.label,
-    required this.icon,
+    required this.outlineIcon,
+    required this.fillIcon,
     required this.route,
   });
 
   final String label;
-  final IconData icon;
+  final IconData outlineIcon;
+  final IconData fillIcon;
   final String route;
 }
 
@@ -89,36 +107,41 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // The design marks the active tab with a short rule above the icon.
-    final color = isActive
-        ? AppColors.accentSoft
-        : AppColors.accentSoft.withValues(alpha: 0.55);
-
     return InkWell(
       onTap: onTap,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          // Circular container that surrounds the active icon
           AnimatedContainer(
-            duration: AppMotion.fast,
-            height: 3,
-            width: isActive ? 28 : 0,
+            duration: const Duration(milliseconds: 200),
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
-              color: AppColors.accentSoft,
-              borderRadius: BorderRadius.circular(2),
+              shape: BoxShape.circle,
+              color: isActive ? AppColors.accentSoft : Colors.transparent,
+            ),
+            child: Center(
+              child: Icon(
+                isActive ? tab.fillIcon : tab.outlineIcon,
+                size: isActive ? 20 : 22,
+                color: isActive
+                    ? AppColors.white
+                    : AppColors.accentSoft.withValues(alpha: 0.65),
+              ),
             ),
           ),
-          const SizedBox(height: 5),
-          Icon(tab.icon, size: 23, color: color),
-          const SizedBox(height: 3),
+          const SizedBox(height: 2),
           Text(
             tab.label,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 11,
               height: 1.2,
-              fontWeight: FontWeight.w700,
-              color: color,
+              fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
+              color: isActive
+                  ? AppColors.accentSoft
+                  : AppColors.accentSoft.withValues(alpha: 0.65),
             ),
           ),
         ],
