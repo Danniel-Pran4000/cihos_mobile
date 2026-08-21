@@ -33,6 +33,7 @@ class FakeAuthRepository implements AuthRepository {
   final List<Map<String, Object?>> registrations = [];
 
   bool _signedOut = false;
+  AppUser _currentUser = user;
 
   @override
   Future<AppUser> signIn({
@@ -48,7 +49,7 @@ class FakeAuthRepository implements AuthRepository {
       );
     }
     _signedOut = false;
-    return user;
+    return _currentUser;
   }
 
   @override
@@ -81,12 +82,23 @@ class FakeAuthRepository implements AuthRepository {
       'gender': gender,
     });
 
-    return user.copyWith(fullName: fullName, email: email, phone: phone);
+    _currentUser = _currentUser.copyWith(
+      fullName: fullName,
+      email: email,
+      phone: phone,
+    );
+    return _currentUser;
   }
 
   @override
   Future<AppUser?> restore() async =>
-      startSignedIn && !_signedOut ? user : null;
+      startSignedIn && !_signedOut ? _currentUser : null;
+
+  @override
+  Future<AppUser> updateProfile(AppUser updatedUser) async {
+    _currentUser = updatedUser;
+    return _currentUser;
+  }
 
   @override
   Future<void> signOut() async => _signedOut = true;

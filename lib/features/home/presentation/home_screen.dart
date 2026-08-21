@@ -124,9 +124,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 onTap: () => context.push(AppRoutes.checkQueue),
               ),
               const SizedBox(height: AppSpacing.xxl),
-              Text(
-                'Konsultasi Anda',
-                style: AppTypography.titleMd.copyWith(fontSize: 15),
+              Row(
+                children: [
+                  Container(
+                    width: 4,
+                    height: 18,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Konsultasi Anda',
+                    style: AppTypography.headingMd.copyWith(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: AppSpacing.md),
               _PatientFilter(
@@ -145,46 +162,72 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 hospital: 'Ciputra Hospital Surabaya',
               ),
               const SizedBox(height: AppSpacing.xxxl),
-              Text(
-                'Info Kesehatan',
-                style: AppTypography.headingLg.copyWith(
-                  fontSize: 22,
-                  color: AppColors.accentSoft,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 4,
+                        height: 18,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Info Kesehatan',
+                        style: AppTypography.headingMd.copyWith(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  InkWell(
+                    key: const Key('moreArticles'),
+                    onTap: () => context.push(AppRoutes.healthNews),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            'Lihat Semua',
+                            style: AppTypography.bodySm.copyWith(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          const Icon(
+                            Icons.chevron_right_rounded,
+                            size: 18,
+                            color: AppColors.primary,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.md),
               for (final article in _articles) ...[
                 Pressable(
                   scale: 0.98,
-                  child: ArticleCard(article: article),
+                  child: ArticleCard(
+                    article: article,
+                    onTap: () => context.push(AppRoutes.healthNews),
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.md),
               ],
-              const SizedBox(height: AppSpacing.lg),
-              InkWell(
-                key: const Key('moreArticles'),
-                onTap: () => context.push(AppRoutes.healthNews),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        'Artikel Selanjutnya',
-                        style: AppTypography.headingLg.copyWith(
-                          fontSize: 22,
-                          color: AppColors.accentSoft,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    const Icon(
-                      Icons.arrow_right_alt,
-                      size: 26,
-                      color: AppColors.accentSoft,
-                    ),
-                  ],
-                ),
-              ),
             ],
           ),
         ),

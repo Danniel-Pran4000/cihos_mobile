@@ -24,7 +24,7 @@ class WellnessTool {
   final Color tint;
 }
 
-/// Self-care tools, presented inside one dark panel.
+/// Self-care tools screen with modern layout and beautiful colorful cards.
 class WellnessScreen extends StatelessWidget {
   const WellnessScreen({super.key});
 
@@ -80,52 +80,125 @@ class WellnessScreen extends StatelessWidget {
       body: TexturedBackground(
         child: SafeArea(
           bottom: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.xxl,
-              AppSpacing.lg,
-              AppSpacing.xxl,
-              AppSpacing.lg,
-            ),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x33000000),
-                    offset: Offset(0, 8),
-                    blurRadius: 24,
-                  ),
-                ],
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColors.accentSoft,
-                  borderRadius: BorderRadius.circular(30),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Header Section
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.xxl,
+                  AppSpacing.lg,
+                  AppSpacing.xxl,
+                  AppSpacing.md,
                 ),
-                child: ListView(
-                  padding: const EdgeInsets.all(AppSpacing.xl),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Center(child: Illustrations.wellness(size: 96)),
-                    const SizedBox(height: AppSpacing.md),
-                    Text(
-                      'Cek Kebutuhan\nKesehatanmu',
-                      textAlign: TextAlign.center,
-                      style: AppTypography.headingLg.copyWith(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.white,
-                      ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Sehat-mu',
+                          style: AppTypography.headingLg.copyWith(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: AppSpacing.xl),
-                    for (final tool in _tools) ...[
-                      _ToolCard(tool: tool),
-                      const SizedBox(height: AppSpacing.md),
-                    ],
                   ],
                 ),
               ),
-            ),
+
+              // Hero Banner Card
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+                child: Container(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEDF5F7),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppColors.mint.withValues(alpha: 0.6),
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.04),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Cek Kebutuhan\nKesehatanmu',
+                              style: AppTypography.headingMd.copyWith(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                height: 1.25,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Pantau kebiasaan sehat harian Anda dengan fitur mandiri.',
+                              style: AppTypography.bodySm.copyWith(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
+                                height: 1.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Illustrations.wellness(size: 68),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: AppSpacing.lg),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+                child: Text(
+                  'Fitur Kesehatan Mandiri',
+                  style: AppTypography.titleMd.copyWith(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: AppSpacing.sm),
+
+              // Tools List
+              Expanded(
+                child: ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.xxl,
+                    AppSpacing.xs,
+                    AppSpacing.xxl,
+                    AppSpacing.xxxl,
+                  ),
+                  itemCount: _tools.length,
+                  separatorBuilder: (_, _) =>
+                      const SizedBox(height: AppSpacing.md),
+                  itemBuilder: (context, index) =>
+                      _ToolCard(tool: _tools[index]),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -141,25 +214,41 @@ class _ToolCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(AppRadius.sm),
+      color: AppColors.white,
+      borderRadius: BorderRadius.circular(16),
+      elevation: 0,
       child: InkWell(
         onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${tool.title} akan segera hadir.')),
+          SnackBar(
+            content: Text('Fitur ${tool.title} akan segera hadir.'),
+            duration: const Duration(seconds: 2),
+          ),
         ),
-        borderRadius: BorderRadius.circular(AppRadius.sm),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.sm),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border, width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.accentSoft.withValues(alpha: 0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
           child: Row(
             children: [
+              // Icon Badge with distinct tint color
               Container(
-                width: 38,
-                height: 38,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
                   color: tool.tint.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(tool.icon, size: 21, color: tool.tint),
+                child: Icon(tool.icon, size: 22, color: tool.tint),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
@@ -170,23 +259,25 @@ class _ToolCard extends StatelessWidget {
                       tool.title,
                       style: AppTypography.bodySm.copyWith(
                         fontSize: 14,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
                       ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       tool.subtitle,
                       style: AppTypography.bodySm.copyWith(
                         fontSize: 12,
-                        height: 1.25,
-                        color: AppColors.textPrimary.withValues(alpha: 0.7),
+                        height: 1.3,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],
                 ),
               ),
               const Icon(
-                Icons.chevron_right,
-                size: 20,
+                Icons.chevron_right_rounded,
+                size: 22,
                 color: AppColors.textTertiary,
               ),
             ],
