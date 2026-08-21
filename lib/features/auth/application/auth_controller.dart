@@ -98,6 +98,22 @@ class AuthController extends StateNotifier<AuthState> {
     );
   }
 
+  /// Updates the currently signed-in user's profile and persists it.
+  Future<bool> updateProfile(AppUser user) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final updatedUser = await _repository.updateProfile(user);
+      state = state.copyWith(user: updatedUser, isLoading: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
+      return false;
+    }
+  }
+
   Future<void> signOut() async {
     await _repository.signOut();
     state = const AuthState();

@@ -49,7 +49,25 @@ class AppUser {
         _ => null,
       },
       address: json['address'] as String?,
+      photoUrl: json['photo_url'] as String?,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': fullName,
+      'email': email,
+      'phone': phone,
+      'medical_no': medicalNo,
+      'nik': nik,
+      'dob': birthDate?.toIso8601String(),
+      'gender': gender == Gender.male
+          ? 'laki-laki'
+          : (gender == Gender.female ? 'perempuan' : null),
+      'address': address,
+      'photo_url': photoUrl,
+    };
   }
 
   AppUser copyWith({

@@ -1,4 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'avatar_position_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -25,6 +28,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   late final TextEditingController _emailController;
   late final TextEditingController _passwordController;
   late final TextEditingController _birthDateController;
+  String? _avatarPath;
 
   String _country = 'Indonesia';
 
@@ -41,6 +45,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ? ''
           : DateFormat('dd/MM/yyyy').format(user!.birthDate!),
     );
+    _avatarPath = user?.photoUrl;
+    if (user?.address != null && user!.address!.isNotEmpty) {
+      _country = user.address!;
+    }
   }
 
   @override
@@ -52,10 +60,38 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     super.dispose();
   }
 
-  void _save() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Perubahan profil disimpan.')),
+  Future<void> _save() async {
+    final currentUser = ref.read(authControllerProvider).user;
+    if (currentUser == null) return;
+
+    DateTime? parsedDob;
+    if (_birthDateController.text.isNotEmpty) {
+      try {
+        parsedDob = DateFormat('dd/MM/yyyy').parse(_birthDateController.text);
+      } catch (_) {}
+    }
+
+    final updated = currentUser.copyWith(
+      fullName: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+      birthDate: parsedDob,
+      address: _country,
+      photoUrl: _avatarPath,
     );
+
+    final success =
+        await ref.read(authControllerProvider.notifier).updateProfile(updated);
+
+    if (!mounted) return;
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Perubahan profil berhasil disimpan.')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Gagal menyimpan perubahan profil.')),
+      );
+    }
   }
 
   @override
@@ -97,7 +133,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ],
               ),
               const SizedBox(height: AppSpacing.xxl),
-              const Center(child: _AvatarPicker()),
+              Center(
+                child: _AvatarPicker(
+                  avatarPath: _avatarPath,
+                  onTap: _pickAvatar,
+                ),
+              ),
               const SizedBox(height: AppSpacing.xxl),
               _ProfileField(label: 'Nama', controller: _nameController),
               _ProfileField(
@@ -126,6 +167,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 child: AppButton(
                   label: 'Simpan',
                   background: AppColors.accentSoft,
+                  isLoading: ref.watch(authControllerProvider).isLoading,
                   onPressed: _save,
                 ),
               ),
@@ -149,11 +191,63 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       _birthDateController.text = DateFormat('dd/MM/yyyy').format(picked);
     }
   }
+
+  Future<void> _pickAvatar() async {
+    final picker = ImagePicker();
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        decoration: const BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt, color: AppColors.textPrimary),
+              title: const Text('Kamera', style: TextStyle(color: AppColors.textPrimary)),
+              onTap: () => Navigator.of(context).pop(ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library, color: AppColors.textPrimary),
+              title: const Text('Galeri', style: TextStyle(color: AppColors.textPrimary)),
+              onTap: () => Navigator.of(context).pop(ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (source != null) {
+      final pickedFile = await picker.pickImage(source: source);
+      if (pickedFile != null && mounted) {
+        final croppedPath = await Navigator.of(context).push<String>(
+          MaterialPageRoute(
+            builder: (_) => AvatarPositionScreen(
+              imageFile: File(pickedFile.path),
+            ),
+          ),
+        );
+
+        if (croppedPath != null && mounted) {
+          setState(() {
+            _avatarPath = croppedPath;
+          });
+        }
+      }
+    }
+  }
 }
 
 /// Circular avatar with the camera badge from the design.
 class _AvatarPicker extends StatelessWidget {
-  const _AvatarPicker();
+  const _AvatarPicker({this.avatarPath, required this.onTap});
+
+  final String? avatarPath;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -171,15 +265,7 @@ class _AvatarPicker extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             clipBehavior: Clip.antiAlias,
-            child: Image.asset(
-              'assets/images/avatar.jpg',
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => const Icon(
-                Icons.person,
-                size: 60,
-                color: AppColors.textTertiary,
-              ),
-            ),
+            child: _buildAvatarImage(),
           ),
           Positioned(
             right: -4,
@@ -194,11 +280,7 @@ class _AvatarPicker extends StatelessWidget {
                 shape: const CircleBorder(),
                 child: InkWell(
                   key: const Key('changeAvatar'),
-                  onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Ubah foto profil akan segera hadir.'),
-                    ),
-                  ),
+                  onTap: onTap,
                   customBorder: const CircleBorder(),
                   child: const Padding(
                     padding: EdgeInsets.all(6),
@@ -214,6 +296,37 @@ class _AvatarPicker extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildAvatarImage() {
+    if (avatarPath != null && avatarPath!.isNotEmpty) {
+      final file = File(avatarPath!);
+      if (file.existsSync()) {
+        return Image.file(
+          file,
+          fit: BoxFit.cover,
+        );
+      } else if (avatarPath!.startsWith('http')) {
+        return Image.network(
+          avatarPath!,
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) => _defaultIcon(),
+        );
+      }
+    }
+    return Image.asset(
+      'assets/images/avatar.jpg',
+      fit: BoxFit.cover,
+      errorBuilder: (_, _, _) => _defaultIcon(),
+    );
+  }
+
+  Widget _defaultIcon() {
+    return const Icon(
+      Icons.person,
+      size: 60,
+      color: AppColors.textTertiary,
     );
   }
 }

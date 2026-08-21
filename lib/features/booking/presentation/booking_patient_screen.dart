@@ -56,6 +56,7 @@ class _BookingPatientScreenState extends State<BookingPatientScreen> {
       AppRoutes.bookingSummary,
       extra: widget.booking.copyWith(
         patientName: _patient!.name,
+        patientMedicalRecordNumber: _patient!.medicalRecordNumber,
         paymentMethod: _paymentMethod,
         company: _company,
       ),

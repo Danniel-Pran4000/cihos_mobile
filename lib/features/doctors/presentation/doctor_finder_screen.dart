@@ -14,7 +14,9 @@ import '../../../core/widgets/textured_background.dart';
 import '../../booking/domain/booking.dart';
 import '../../booking/widgets/practice_calendar.dart';
 import '../../booking/widgets/specialty_picker_sheet.dart';
+import '../data/catalog_repository.dart';
 import '../data/doctor_repository.dart';
+import '../domain/clinic.dart';
 import 'widgets/doctor_picker_sheet.dart';
 import '../../../core/theme/app_elevation.dart';
 
@@ -34,18 +36,21 @@ class _DoctorFinderScreenState extends ConsumerState<DoctorFinderScreen> {
   DateTime? _date;
 
   Future<void> _pickClinic() async {
-    final picked = await showModalBottomSheet<String>(
+    final clinics = ref.read(clinicsProvider).valueOrNull ?? [];
+    final selectedClinic = clinics.where((c) => c.displayName == _clinic).firstOrNull;
+    
+    final picked = await showModalBottomSheet<Clinic>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => SpecialtyPickerSheet(
-        selected: _clinic,
+        selected: selectedClinic,
         title: 'Pilih Klinik',
         searchHint: 'Cari Klinik',
       ),
     );
 
-    if (picked != null) setState(() => _clinic = picked);
+    if (picked != null) setState(() => _clinic = picked.displayName);
   }
 
   Future<void> _pickDoctor() async {

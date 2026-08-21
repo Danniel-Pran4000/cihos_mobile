@@ -65,11 +65,17 @@ class BookingSlot {
   const BookingSlot({
     required this.start,
     required this.end,
+    this.session,
+    this.slotNumber,
+    this.operationalTimeCode,
     this.isAvailable = true,
   });
 
   final DateTime start;
   final DateTime end;
+  final int? session;
+  final int? slotNumber;
+  final String? operationalTimeCode;
   final bool isAvailable;
 
   String get label {
@@ -85,10 +91,16 @@ class Booking {
     required this.kind,
     this.doctorName,
     this.doctorId,
+    this.paramedicCode,
     this.specialty,
+    this.unitCode,
     this.date,
     this.slot,
+    this.slotNumber,
+    this.session,
+    this.operationalTimeCode,
     this.patientName,
+    this.patientMedicalRecordNumber,
     this.isNewPatient = false,
     this.paymentMethod,
     this.company,
@@ -97,11 +109,17 @@ class Booking {
   final BookingKind kind;
   final String? doctorName;
   final String? doctorId;
+  final String? paramedicCode;
   final String? specialty;
+  final String? unitCode;
   final DateTime? date;
   final BookingSlot? slot;
+  final int? slotNumber;
+  final int? session;
+  final String? operationalTimeCode;
 
   final String? patientName;
+  final String? patientMedicalRecordNumber;
   final bool isNewPatient;
 
   /// "Pribadi" or "Asuransi/Perusahaan".
@@ -117,10 +135,16 @@ class Booking {
   Booking copyWith({
     String? doctorName,
     String? doctorId,
+    String? paramedicCode,
     String? specialty,
+    String? unitCode,
     DateTime? date,
     BookingSlot? slot,
+    int? slotNumber,
+    int? session,
+    String? operationalTimeCode,
     String? patientName,
+    String? patientMedicalRecordNumber,
     bool? isNewPatient,
     String? paymentMethod,
     String? company,
@@ -130,10 +154,16 @@ class Booking {
       kind: kind,
       doctorName: doctorName ?? this.doctorName,
       doctorId: doctorId ?? this.doctorId,
+      paramedicCode: paramedicCode ?? this.paramedicCode,
       specialty: specialty ?? this.specialty,
+      unitCode: unitCode ?? this.unitCode,
       date: date ?? this.date,
       slot: clearSlot ? null : (slot ?? this.slot),
+      slotNumber: clearSlot ? null : (slotNumber ?? this.slotNumber),
+      session: clearSlot ? null : (session ?? this.session),
+      operationalTimeCode: clearSlot ? null : (operationalTimeCode ?? this.operationalTimeCode),
       patientName: patientName ?? this.patientName,
+      patientMedicalRecordNumber: patientMedicalRecordNumber ?? this.patientMedicalRecordNumber,
       isNewPatient: isNewPatient ?? this.isNewPatient,
       paymentMethod: paymentMethod ?? this.paymentMethod,
       company: company ?? this.company,

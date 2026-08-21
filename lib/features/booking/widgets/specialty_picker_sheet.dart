@@ -8,9 +8,11 @@ import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/async_view.dart';
 import '../../doctors/data/catalog_repository.dart';
 
+import '../../doctors/domain/clinic.dart';
+
 /// The searchable specialty list, opened from the booking search panel.
 ///
-/// Pops the chosen specialty, or null when the sheet is dismissed.
+/// Pops the chosen clinic, or null when the sheet is dismissed.
 class SpecialtyPickerSheet extends ConsumerStatefulWidget {
   const SpecialtyPickerSheet({
     super.key,
@@ -19,7 +21,7 @@ class SpecialtyPickerSheet extends ConsumerStatefulWidget {
     this.searchHint = 'Cari Spesialisasi',
   });
 
-  final String? selected;
+  final Clinic? selected;
 
   /// The clinic picker reuses this sheet with its own wording.
   final String title;
@@ -33,7 +35,7 @@ class SpecialtyPickerSheet extends ConsumerStatefulWidget {
 class _SpecialtyPickerSheetState extends ConsumerState<SpecialtyPickerSheet> {
   final _searchController = TextEditingController();
 
-  late String? _selected = widget.selected;
+  late Clinic? _selected = widget.selected;
   String _query = '';
 
   @override
@@ -50,9 +52,8 @@ class _SpecialtyPickerSheetState extends ConsumerState<SpecialtyPickerSheet> {
           .where(
             (c) => c.displayName.toLowerCase().contains(_query.toLowerCase()),
           )
-          .map((c) => c.displayName)
           .toList(),
-      orElse: () => const <String>[],
+      orElse: () => const <Clinic>[],
     );
 
     return DraggableScrollableSheet(
@@ -130,9 +131,9 @@ class _SpecialtyPickerSheetState extends ConsumerState<SpecialtyPickerSheet> {
                   ),
                   itemCount: matches.length,
                   itemBuilder: (context, index) {
-                    final specialty = matches[index];
+                    final clinic = matches[index];
                     return InkWell(
-                      onTap: () => setState(() => _selected = specialty),
+                      onTap: () => setState(() => _selected = clinic),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                           vertical: AppSpacing.sm,
@@ -141,16 +142,16 @@ class _SpecialtyPickerSheetState extends ConsumerState<SpecialtyPickerSheet> {
                           children: [
                             Expanded(
                               child: Text(
-                                specialty,
+                                clinic.displayName,
                                 style: AppTypography.bodySm.copyWith(
                                   fontSize: 15,
-                                  fontWeight: specialty == _selected
+                                  fontWeight: clinic.code == _selected?.code
                                       ? FontWeight.w700
                                       : FontWeight.w400,
                                 ),
                               ),
                             ),
-                            if (specialty == _selected)
+                            if (clinic.code == _selected?.code)
                               const Icon(
                                 Icons.check,
                                 size: 18,

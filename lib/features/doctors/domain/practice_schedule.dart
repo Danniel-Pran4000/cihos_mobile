@@ -5,6 +5,7 @@ class PracticeSchedule {
     required this.unitName,
     required this.dayNumber,
     required this.timeLabel,
+    this.operationalTimeCode = '',
     this.roomCode,
     this.windows = const [],
   });
@@ -17,6 +18,7 @@ class PracticeSchedule {
       // The API uses ISO weekday numbering: 1 = Monday.
       dayNumber: (json['day_number'] as num?)?.toInt() ?? 0,
       timeLabel: json['operational_time_name'] as String? ?? '',
+      operationalTimeCode: json['operational_time_code'] as String? ?? '',
       roomCode: json['room_code'] as String?,
       windows: rawWindows is List
           ? rawWindows
@@ -35,6 +37,9 @@ class PracticeSchedule {
 
   /// Human-readable range, e.g. `19:00 - 20:00`.
   final String timeLabel;
+
+  /// Medinfras operational time code, e.g. `OT-020`.
+  final String operationalTimeCode;
 
   final String? roomCode;
   final List<PracticeWindow> windows;

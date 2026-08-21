@@ -233,7 +233,9 @@ class _DoctorResultCard extends StatelessWidget {
                             extra: booking.copyWith(
                               doctorId: doctor.id,
                               doctorName: doctor.name,
+                              paramedicCode: doctor.code,
                               specialty: doctor.specialty,
+                              unitCode: doctor.unitCode,
                               date: day,
                               slot: slot,
                             ),
@@ -250,7 +252,9 @@ class _DoctorResultCard extends StatelessWidget {
                   extra: booking.copyWith(
                     doctorId: doctor.id,
                     doctorName: doctor.name,
+                    paramedicCode: doctor.code,
                     specialty: doctor.specialty,
+                    unitCode: doctor.unitCode,
                   ),
                 ),
                 child: Text(

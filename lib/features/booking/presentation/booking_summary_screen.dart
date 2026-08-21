@@ -14,17 +14,20 @@ import '../widgets/booking_success_sheet.dart';
 import '../widgets/edit_booking_sheet.dart';
 import '../../../core/theme/app_motion.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../data/booking_repository.dart';
+
 /// Final review before the booking is created.
-class BookingSummaryScreen extends StatefulWidget {
+class BookingSummaryScreen extends ConsumerStatefulWidget {
   const BookingSummaryScreen({super.key, required this.booking});
 
   final Booking booking;
 
   @override
-  State<BookingSummaryScreen> createState() => _BookingSummaryScreenState();
+  ConsumerState<BookingSummaryScreen> createState() => _BookingSummaryScreenState();
 }
 
-class _BookingSummaryScreenState extends State<BookingSummaryScreen> {
+class _BookingSummaryScreenState extends ConsumerState<BookingSummaryScreen> {
   bool _agreedToTerms = false;
   bool _isExpanded = true;
   bool _isSubmitting = false;
@@ -62,29 +65,39 @@ class _BookingSummaryScreenState extends State<BookingSummaryScreen> {
     }
 
     setState(() => _isSubmitting = true);
-    // Stands in for the create-booking call.
-    await Future<void>.delayed(const Duration(milliseconds: 900));
+    
+    try {
+      final bookingCode = await ref.read(bookingRepositoryProvider).create(widget.booking);
+      
+      if (!mounted) return;
+      setState(() => _isSubmitting = false);
 
-    if (!mounted) return;
-    setState(() => _isSubmitting = false);
+      final destination = await showModalBottomSheet<BookingSuccessAction>(
+        context: context,
+        isDismissible: false,
+        enableDrag: false,
+        // Without this the sheet is capped at half the screen, which clips the
+        // success mark and the two actions below it.
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => BookingSuccessSheet(bookingCode: bookingCode),
+      );
 
-    final destination = await showModalBottomSheet<BookingSuccessAction>(
-      context: context,
-      isDismissible: false,
-      enableDrag: false,
-      // Without this the sheet is capped at half the screen, which clips the
-      // success mark and the two actions below it.
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const BookingSuccessSheet(),
-    );
-
-    if (!mounted) return;
-    context.go(
-      destination == BookingSuccessAction.viewHistory
-          ? AppRoutes.appointments
-          : AppRoutes.home,
-    );
+      if (!mounted) return;
+      context.go(
+        destination == BookingSuccessAction.viewHistory
+            ? AppRoutes.appointments
+            : AppRoutes.home,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isSubmitting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal membuat janji temu: ${e.toString()}'),
+        ),
+      );
+    }
   }
 
   @override

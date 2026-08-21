@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
@@ -11,6 +13,7 @@ import '../../../core/widgets/textured_background.dart';
 import '../domain/booking.dart';
 import '../widgets/practice_calendar.dart';
 import '../../../core/theme/app_elevation.dart';
+import '../../doctors/data/catalog_repository.dart';
 
 /// Pick the day and time slot, for either booking kind.
 class BookingScheduleScreen extends StatefulWidget {
@@ -42,7 +45,13 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> {
 
     context.push(
       AppRoutes.bookingPatient,
-      extra: widget.booking.copyWith(date: _date, slot: _slot),
+      extra: widget.booking.copyWith(
+        date: _date,
+        slot: _slot,
+        session: _slot?.session,
+        slotNumber: _slot?.slotNumber,
+        operationalTimeCode: _slot?.operationalTimeCode,
+      ),
     );
   }
 
@@ -92,6 +101,7 @@ class _BookingScheduleScreenState extends State<BookingScheduleScreen> {
                     ),
                     const SizedBox(height: AppSpacing.xl),
                     _SlotPanel(
+                      booking: widget.booking,
                       date: _date,
                       selected: _slot,
                       onSelected: (value) => setState(() => _slot = value),
@@ -181,23 +191,144 @@ class _MethodChip extends StatelessWidget {
 }
 
 /// The dark panel of bookable times for the chosen day.
-class _SlotPanel extends StatelessWidget {
+class _SlotPanel extends ConsumerWidget {
   const _SlotPanel({
+    required this.booking,
     required this.date,
     required this.selected,
     required this.onSelected,
   });
 
+  final Booking booking;
   final DateTime? date;
   final BookingSlot? selected;
   final ValueChanged<BookingSlot> onSelected;
 
   @override
-  Widget build(BuildContext context) {
-    final slots = date == null
-        ? const <BookingSlot>[]
-        : BookingOptions.slotsFor(date!);
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (date == null) {
+      return _buildContainer(
+        child: Text(
+          'Pilih tanggal untuk melihat jam yang tersedia.',
+          style: AppTypography.bodySm.copyWith(
+            fontSize: 14,
+            color: const Color(0xCCDDDFF3),
+          ),
+        ),
+      );
+    }
 
+    final query = SlotQuery(
+      doctorId: booking.doctorId ?? '',
+      unitCode: booking.unitCode ?? '',
+      date: date!,
+    );
+
+    final slotsAsync = ref.watch(slotsProvider(query));
+    final schedulesAsync = ref.watch(doctorSchedulesProvider(query.doctorId));
+
+    return slotsAsync.when(
+      loading: () => _buildContainer(
+        child: const Center(
+          child: CircularProgressIndicator(color: AppColors.white),
+        ),
+      ),
+      error: (e, _) => _buildContainer(
+        child: Text(
+          'Gagal memuat jadwal. ${e.toString()}',
+          style: AppTypography.bodySm.copyWith(color: AppColors.white),
+        ),
+      ),
+      data: (daySlots) {
+        if (daySlots.isEmpty) {
+          return _buildContainer(
+            child: Text(
+              'Tidak ada jam yang tersedia pada tanggal ini.',
+              style: AppTypography.bodySm.copyWith(
+                fontSize: 14,
+                color: const Color(0xCCDDDFF3),
+              ),
+            ),
+          );
+        }
+
+        // Look up operationalTimeCode from the doctor's weekly schedule for this day.
+        String? getOperationalTimeCode(int session) {
+          final schedules = schedulesAsync.valueOrNull;
+          if (schedules == null) return null;
+          
+          final dayNumber = date!.weekday; // 1 = Monday, 7 = Sunday
+          for (final schedule in schedules) {
+            if (schedule.unitCode == query.unitCode && schedule.dayNumber == dayNumber) {
+              // We check if this schedule's windows contain the session
+              if (schedule.windows.any((w) => w.session == session)) {
+                return schedule.operationalTimeCode;
+              }
+            }
+          }
+          return null;
+        }
+
+        return _buildContainer(
+          child: Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: [
+              for (final bookable in daySlots.slots)
+                _SlotChip(
+                  slot: BookingSlot(
+                    start: DateFormat('HH:mm').parse(bookable.start).copyWith(
+                          year: date!.year,
+                          month: date!.month,
+                          day: date!.day,
+                        ),
+                    end: DateFormat('HH:mm').parse(bookable.end).copyWith(
+                          year: date!.year,
+                          month: date!.month,
+                          day: date!.day,
+                        ),
+                    session: bookable.session,
+                    slotNumber: bookable.number,
+                    operationalTimeCode: getOperationalTimeCode(bookable.session),
+                  ),
+                  isSelected: selected?.start.hour ==
+                          DateFormat('HH:mm').parse(bookable.start).hour &&
+                      selected?.start.minute ==
+                          DateFormat('HH:mm').parse(bookable.start).minute,
+                  onTap: () {
+                    final start = DateFormat('HH:mm').parse(bookable.start);
+                    final end = DateFormat('HH:mm').parse(bookable.end);
+                    onSelected(
+                      BookingSlot(
+                        start: DateTime(
+                          date!.year,
+                          date!.month,
+                          date!.day,
+                          start.hour,
+                          start.minute,
+                        ),
+                        end: DateTime(
+                          date!.year,
+                          date!.month,
+                          date!.day,
+                          end.hour,
+                          end.minute,
+                        ),
+                        session: bookable.session,
+                        slotNumber: bookable.number,
+                        operationalTimeCode: getOperationalTimeCode(bookable.session),
+                      ),
+                    );
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildContainer({required Widget child}) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -217,27 +348,7 @@ class _SlotPanel extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.md),
-          if (slots.isEmpty)
-            Text(
-              'Pilih tanggal untuk melihat jam yang tersedia.',
-              style: AppTypography.bodySm.copyWith(
-                fontSize: 14,
-                color: const Color(0xCCDDDFF3),
-              ),
-            )
-          else
-            Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
-              children: [
-                for (final slot in slots)
-                  _SlotChip(
-                    slot: slot,
-                    isSelected: selected?.start == slot.start,
-                    onTap: slot.isAvailable ? () => onSelected(slot) : null,
-                  ),
-              ],
-            ),
+          child,
         ],
       ),
     );

@@ -1,24 +1,23 @@
+import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../../features/auth/domain/user.dart';
 
-/// Keeps the patient's bearer token between launches.
-///
-/// Uses the platform keystore rather than shared preferences: the token grants
-/// access to a person's medical appointments, so it belongs in encrypted
-/// storage, not a plain-text preferences file another app could read on a
-/// rooted device.
+/// Keeps the patient's bearer token and user profile data between launches.
 class TokenStore {
   TokenStore({FlutterSecureStorage? storage})
-    // This version of flutter_secure_storage encrypts on Android by default,
-    // so no extra options are needed.
     : _storage = storage ?? const FlutterSecureStorage();
 
   static const _key = 'cihos_auth_token';
+  static const _userKey = 'cihos_user_data';
 
   final FlutterSecureStorage _storage;
 
   /// Cached in memory so repeated calls do not hit the keystore each request.
   String? _cached;
   bool _hasRead = false;
+
+  AppUser? _cachedUser;
+  bool _hasReadUser = false;
 
   Future<String?> read() async {
     if (_hasRead) return _cached;
@@ -33,9 +32,30 @@ class TokenStore {
     await _storage.write(key: _key, value: token);
   }
 
+  Future<AppUser?> readUser() async {
+    if (_hasReadUser) return _cachedUser;
+    final jsonStr = await _storage.read(key: _userKey);
+    if (jsonStr != null) {
+      try {
+        _cachedUser = AppUser.fromJson(jsonDecode(jsonStr));
+      } catch (_) {}
+    }
+    _hasReadUser = true;
+    return _cachedUser;
+  }
+
+  Future<void> writeUser(AppUser user) async {
+    _cachedUser = user;
+    _hasReadUser = true;
+    await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
+  }
+
   Future<void> clear() async {
     _cached = null;
+    _cachedUser = null;
     _hasRead = true;
+    _hasReadUser = true;
     await _storage.delete(key: _key);
+    await _storage.delete(key: _userKey);
   }
 }

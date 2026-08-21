@@ -67,18 +67,31 @@ class AuthRepository {
 
     try {
       final response = await _client.get('/app/me', authenticated: true);
-      return AppUser.fromJson(
+      final user = AppUser.fromJson(
         (response['patient'] as Map).cast<String, dynamic>(),
       );
+      final localUser = await _tokens.readUser();
+      final mergedUser = user.copyWith(
+        photoUrl: localUser?.photoUrl ?? user.photoUrl,
+        address: localUser?.address ?? user.address,
+      );
+      await _tokens.writeUser(mergedUser);
+      return mergedUser;
     } on ApiException catch (e) {
-      // A rejected token is worthless; drop it so the user is asked to sign in
-      // rather than being retried against every subsequent request.
       if (e.isUnauthenticated) {
         await _tokens.clear();
         return null;
       }
-      rethrow;
+      return await _tokens.readUser();
+    } catch (_) {
+      return await _tokens.readUser();
     }
+  }
+
+  /// Updates the user's profile and persists it locally.
+  Future<AppUser> updateProfile(AppUser user) async {
+    await _tokens.writeUser(user);
+    return user;
   }
 
   /// Revokes the token server-side, then forgets it locally.
@@ -96,9 +109,11 @@ class AuthRepository {
   Future<AppUser> _persist(Map<String, dynamic> response) async {
     final token = response['token'] as String?;
     if (token != null) await _tokens.write(token);
-    return AppUser.fromJson(
+    final user = AppUser.fromJson(
       (response['patient'] as Map).cast<String, dynamic>(),
     );
+    await _tokens.writeUser(user);
+    return user;
   }
 }
 

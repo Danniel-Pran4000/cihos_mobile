@@ -9,6 +9,7 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/screen_header.dart';
 import '../../../core/widgets/textured_background.dart';
+import '../../doctors/domain/clinic.dart';
 import '../domain/booking.dart';
 import '../widgets/practice_calendar.dart';
 import '../widgets/specialty_picker_sheet.dart';
@@ -27,7 +28,7 @@ class BookingSearchScreen extends StatefulWidget {
 class _BookingSearchScreenState extends State<BookingSearchScreen> {
   final _nameController = TextEditingController();
 
-  String? _specialty;
+  Clinic? _specialty;
   DateTime? _date;
 
   /// The calendar only unfolds once the patient taps the date row.
@@ -40,7 +41,7 @@ class _BookingSearchScreenState extends State<BookingSearchScreen> {
   }
 
   Future<void> _pickSpecialty() async {
-    final picked = await showModalBottomSheet<String>(
+    final picked = await showModalBottomSheet<Clinic>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -54,7 +55,8 @@ class _BookingSearchScreenState extends State<BookingSearchScreen> {
     final booking = Booking(
       kind: widget.kind,
       doctorName: _nameController.text.trim(),
-      specialty: _specialty,
+      specialty: _specialty?.displayName,
+      unitCode: _specialty?.code,
       date: _date,
     );
 
@@ -116,7 +118,7 @@ class _BookingSearchScreenState extends State<BookingSearchScreen> {
                     const SizedBox(height: AppSpacing.xl),
                     _CriteriaPanel(
                       kind: widget.kind,
-                      specialty: _specialty,
+                      specialty: _specialty?.displayName,
                       date: _date,
                       onSpecialtyTapped: _pickSpecialty,
                       onDateTapped: () => setState(

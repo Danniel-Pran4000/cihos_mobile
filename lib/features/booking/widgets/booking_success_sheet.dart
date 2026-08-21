@@ -9,7 +9,9 @@ enum BookingSuccessAction { viewHistory, home }
 
 /// The confirmation sheet shown once the booking has been created.
 class BookingSuccessSheet extends StatelessWidget {
-  const BookingSuccessSheet({super.key});
+  const BookingSuccessSheet({super.key, required this.bookingCode});
+
+  final String bookingCode;
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +39,16 @@ class BookingSuccessSheet extends StatelessWidget {
               style: AppTypography.headingSm.copyWith(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              'Booking ID: $bookingCode',
+              textAlign: TextAlign.center,
+              style: AppTypography.headingSm.copyWith(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: AppColors.accentSoft,
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
