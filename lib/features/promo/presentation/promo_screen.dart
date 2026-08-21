@@ -5,7 +5,6 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/screen_header.dart';
 import '../../../core/widgets/textured_background.dart';
-import '../../../core/theme/app_elevation.dart';
 
 /// Searchable list of current hospital promotions.
 class PromoScreen extends StatefulWidget {
@@ -18,19 +17,26 @@ class PromoScreen extends StatefulWidget {
 class _PromoScreenState extends State<PromoScreen> {
   final _searchController = TextEditingController();
   String _query = '';
+  String _selectedCategory = 'Semua';
+
+  static const _categories = ['Semua', 'MCU', 'MRI', 'Kulit & Rambut', 'DWCC'];
 
   static const _promos = [
     _Promo(
-      keywords: 'general medical check up mcu kesehatan',
-      asset: 'assets/images/promo_2.jpg',
+      keywords: 'mri screening scan radiologi pemeriksaan otak saraf mri',
+      asset: 'assets/images/mri screening.jpg',
     ),
     _Promo(
-      keywords: 'love your breast screening usg khitanan',
-      asset: 'assets/images/promo_1.jpg',
+      keywords: 'general medical check up gmcu mcu kesehatan darah paket',
+      asset: 'assets/images/gmcu.jpg',
     ),
     _Promo(
-      keywords: 'promo spesial konsultasi dokter',
-      asset: 'assets/images/promo_3.jpg',
+      keywords: 'diabetes wound care center dwcc spesialis gula luka',
+      asset: 'assets/images/dwcc.jpg',
+    ),
+    _Promo(
+      keywords: 'hair skin klinik kulit rambut kecantikan estetika wajah',
+      asset: 'assets/images/hair skin.png',
     ),
   ];
 
@@ -40,13 +46,23 @@ class _PromoScreenState extends State<PromoScreen> {
     super.dispose();
   }
 
+  List<_Promo> _getFilteredPromos() {
+    return _promos.where((p) {
+      final matchesCategory = _selectedCategory == 'Semua' ||
+          (_selectedCategory == 'MCU' && p.keywords.contains('mcu')) ||
+          (_selectedCategory == 'MRI' && p.keywords.contains('mri')) ||
+          (_selectedCategory == 'Kulit & Rambut' &&
+              p.keywords.contains('kulit')) ||
+          (_selectedCategory == 'DWCC' && p.keywords.contains('dwcc'));
+      final matchesQuery = _query.isEmpty ||
+          p.keywords.toLowerCase().contains(_query.toLowerCase());
+      return matchesCategory && matchesQuery;
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final matches = _query.isEmpty
-        ? _promos
-        : _promos
-              .where((p) => p.keywords.contains(_query.toLowerCase()))
-              .toList();
+    final matches = _getFilteredPromos();
 
     return Scaffold(
       body: TexturedBackground(
@@ -54,61 +70,168 @@ class _PromoScreenState extends State<PromoScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const ScreenHeader(title: 'Promo'),
+              const ScreenHeader(title: 'Promo Spesial'),
+
+              // Search Bar
               Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.xxl,
+                  horizontal: AppSpacing.xl,
+                  vertical: AppSpacing.xs,
                 ),
-                child: _SearchField(
-                  controller: _searchController,
-                  onChanged: (value) => setState(() => _query = value),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.xxl,
-                  AppSpacing.md,
-                  AppSpacing.xxl,
-                  AppSpacing.lg,
-                ),
-                child: Text(
-                  'Masukkan kata kunci yang ingin Anda cari, misalnya '
-                  'khitanan, MCU, etc.',
-                  style: AppTypography.bodySm.copyWith(
-                    fontSize: 14,
-                    height: 1.25,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black.withValues(alpha: 0.55),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.border, width: 1),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.accentSoft.withValues(alpha: 0.04),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (value) => setState(() => _query = value),
+                    style: AppTypography.bodySm.copyWith(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Cari promo (MCU, MRI, Kulit, dll)',
+                      hintStyle: AppTypography.bodySm.copyWith(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textTertiary,
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.search_rounded,
+                        color: AppColors.accentSoft,
+                        size: 22,
+                      ),
+                      suffixIcon: _query.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear_rounded, size: 18),
+                              color: AppColors.textTertiary,
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() => _query = '');
+                              },
+                            )
+                          : null,
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.md,
+                      ),
+                    ),
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.xxl,
-                ),
-                child: Text(
-                  _query.isEmpty ? 'Lihat Semua Promo' : 'Hasil Pencarian',
-                  style: AppTypography.inputText.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+
+              const SizedBox(height: AppSpacing.xs),
+
+              // Filter Chips
+              SizedBox(
+                height: 38,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+                  itemCount: _categories.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    final category = _categories[index];
+                    final isSelected = category == _selectedCategory;
+                    return InkWell(
+                      onTap: () => setState(() => _selectedCategory = category),
+                      borderRadius: BorderRadius.circular(20),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppColors.primary
+                              : AppColors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isSelected
+                                ? AppColors.primary
+                                : AppColors.border,
+                            width: 1,
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          category,
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: isSelected
+                                ? FontWeight.w800
+                                : FontWeight.w600,
+                            color: isSelected
+                                ? AppColors.white
+                                : AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
-              const SizedBox(height: AppSpacing.lg),
+
+              const SizedBox(height: AppSpacing.md),
+
+              // Title Indicator
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 4,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _query.isEmpty && _selectedCategory == 'Semua'
+                          ? 'Daftar Promo Menarik'
+                          : 'Hasil Pencarian (${matches.length})',
+                      style: AppTypography.headingMd.copyWith(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: AppSpacing.md),
+
+              // Promo Cards List
               Expanded(
                 child: matches.isEmpty
                     ? const _NoResults()
                     : ListView.separated(
                         padding: const EdgeInsets.fromLTRB(
-                          AppSpacing.xxl,
+                          AppSpacing.xl,
                           0,
-                          AppSpacing.xxl,
+                          AppSpacing.xl,
                           AppSpacing.xxxl,
                         ),
                         itemCount: matches.length,
                         separatorBuilder: (_, _) =>
-                            const SizedBox(height: AppSpacing.xl),
+                            const SizedBox(height: AppSpacing.lg),
                         itemBuilder: (context, index) =>
-                            _PromoTile(promo: matches[index]),
+                            _PromoCard(promo: matches[index]),
                       ),
               ),
             ],
@@ -127,86 +250,49 @@ class _Promo {
   final String asset;
 }
 
-class _SearchField extends StatelessWidget {
-  const _SearchField({required this.controller, required this.onChanged});
-
-  final TextEditingController controller;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        boxShadow: AppElevation.level2,
-      ),
-      child: TextField(
-        controller: controller,
-        onChanged: onChanged,
-        style: AppTypography.bodySm.copyWith(
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-        ),
-        decoration: InputDecoration(
-          hintText: 'Cari Kata Kunci',
-          hintStyle: AppTypography.bodySm.copyWith(
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary.withValues(alpha: 0.8),
-          ),
-          suffixIcon: const Icon(
-            Icons.search,
-            color: AppColors.textPrimary,
-          ),
-          filled: true,
-          fillColor: AppColors.surface,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.lg,
-          ),
-          border: const OutlineInputBorder(
-            borderRadius: BorderRadius.zero,
-            borderSide: BorderSide.none,
-          ),
-          enabledBorder: const OutlineInputBorder(
-            borderRadius: BorderRadius.zero,
-            borderSide: BorderSide.none,
-          ),
-          focusedBorder: const OutlineInputBorder(
-            borderRadius: BorderRadius.zero,
-            borderSide: BorderSide(color: AppColors.accent, width: 1.5),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PromoTile extends StatelessWidget {
-  const _PromoTile({required this.promo});
+class _PromoCard extends StatelessWidget {
+  const _PromoCard({required this.promo});
 
   final _Promo promo;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(6),
-        child: Image.asset(
-          promo.asset,
-          width: 266,
-          fit: BoxFit.contain,
-          errorBuilder: (context, error, stackTrace) => Container(
-            width: 266,
-            height: 300,
-            color: AppColors.border,
-            alignment: Alignment.center,
-            child: const Icon(
-              Icons.image_outlined,
-              size: 48,
-              color: AppColors.textTertiary,
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.accentSoft.withValues(alpha: 0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Banner Image
+          Center(
+            child: Image.asset(
+              promo.asset,
+              width: double.infinity,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) => Container(
+                height: 200,
+                color: AppColors.surface,
+                alignment: Alignment.center,
+                child: const Icon(
+                  Icons.image_outlined,
+                  size: 48,
+                  color: AppColors.textTertiary,
+                ),
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -221,13 +307,27 @@ class _NoResults extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.search_off,
-            size: 48,
-            color: AppColors.textTertiary,
+          Container(
+            width: 64,
+            height: 64,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.surface,
+            ),
+            child: const Icon(
+              Icons.search_off_rounded,
+              size: 32,
+              color: AppColors.textTertiary,
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
-          Text('Promo tidak ditemukan', style: AppTypography.bodyMd),
+          Text(
+            'Promo tidak ditemukan',
+            style: AppTypography.bodyMd.copyWith(
+              fontWeight: FontWeight.w700,
+              color: AppColors.textSecondary,
+            ),
+          ),
         ],
       ),
     );
