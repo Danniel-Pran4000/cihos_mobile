@@ -168,6 +168,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       initialDate: DateTime(now.year - 25),
       firstDate: DateTime(1900),
       lastDate: now,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppColors.primary,
+              onPrimary: AppColors.white,
+              onSurface: AppColors.textPrimary,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
 
     if (picked != null) {
@@ -189,7 +201,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          'User Profile',
+          'Profil Pengguna',
           style: AppTypography.headingMd.copyWith(
             fontSize: 20,
             fontWeight: FontWeight.w700,
@@ -219,23 +231,23 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     ),
                     const SizedBox(height: AppSpacing.xxl),
                     _RoundedField(
-                      label: 'First Name',
+                      label: 'Nama Depan',
                       controller: _firstNameController,
                     ),
                     const SizedBox(height: AppSpacing.md),
                     _RoundedField(
-                      label: 'Last Name',
+                      label: 'Nama Belakang',
                       controller: _lastNameController,
                     ),
                     const SizedBox(height: AppSpacing.md),
                     _RoundedField(
-                      label: 'E-Mail',
+                      label: 'Email',
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                     ),
                     const SizedBox(height: AppSpacing.md),
                     _RoundedField(
-                      label: 'Mobile',
+                      label: 'Nomor Telepon',
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
                     ),
@@ -265,7 +277,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   AppSpacing.xl,
                 ),
                 child: AppButton(
-                  label: 'SAVE',
+                  label: 'SIMPAN',
                   expand: true,
                   isLoading: isUpdating,
                   background: AppColors.accentSoft,

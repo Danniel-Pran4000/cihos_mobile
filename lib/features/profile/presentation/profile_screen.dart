@@ -27,7 +27,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(authControllerProvider).user;
-    final fullName = user?.fullName.isNotEmpty == true ? user!.fullName : 'Guest User';
+    final fullName = user?.fullName.isNotEmpty == true ? user!.fullName : 'Pengguna';
     final photoUrl = user?.photoUrl;
 
     return Scaffold(
@@ -89,7 +89,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Welcome',
+                            'Selamat Datang',
                             style: AppTypography.bodySm.copyWith(
                               fontSize: 12,
                               color: AppColors.textTertiary,
@@ -111,7 +111,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                     ),
                     IconButton(
-                      tooltip: 'Keluar',
+                      tooltip: 'Keluar Akun',
                       icon: const Icon(
                         Icons.logout,
                         color: AppColors.accentSoft,
@@ -130,7 +130,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               // Settings Options List
               _SettingsTile(
                 icon: Icons.person_outline_rounded,
-                title: 'User Profile',
+                title: 'Profil Pengguna',
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -143,21 +143,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
               _SettingsTile(
                 icon: Icons.lock_outline_rounded,
-                title: 'Change Password',
+                title: 'Ubah Kata Sandi',
                 onTap: () => ChangePasswordSheet.show(context),
               ),
               const SizedBox(height: AppSpacing.md),
 
               _SettingsTile(
                 icon: Icons.help_outline_rounded,
-                title: 'FAQs',
+                title: 'Tanya Jawab (FAQ)',
                 onTap: () => FaqSheet.show(context),
               ),
               const SizedBox(height: AppSpacing.md),
 
               _SettingsSwitchTile(
                 icon: Icons.notifications_none_rounded,
-                title: 'Push Notification',
+                title: 'Notifikasi Aplikasi',
                 value: _pushNotificationsEnabled,
                 onChanged: (val) {
                   setState(() => _pushNotificationsEnabled = val);
@@ -182,7 +182,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 child: Column(
                   children: [
                     Text(
-                      'If you have any other query you can reach out to us.',
+                      'Punya pertanyaan atau butuh bantuan lebih lanjut? Hubungi kami.',
                       textAlign: TextAlign.center,
                       style: AppTypography.bodySm.copyWith(
                         fontSize: 13,
@@ -196,7 +196,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text(
-                              'Menghubungi WhatsApp Customer Care Ciputra Hospital...',
+                              'Menghubungi Layanan Bantuan Ciputra Hospital...',
                             ),
                           ),
                         );
@@ -204,7 +204,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       child: Padding(
                         padding: const EdgeInsets.all(4),
                         child: Text(
-                          'WhatsApp Us',
+                          'Hubungi via WhatsApp',
                           style: AppTypography.bodySm.copyWith(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,

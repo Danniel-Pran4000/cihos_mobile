@@ -105,7 +105,7 @@ class _ChangePasswordSheetState extends State<ChangePasswordSheet> {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'Change Password',
+              'Ubah Kata Sandi',
               textAlign: TextAlign.center,
               style: AppTypography.headingMd.copyWith(
                 fontSize: 20,
@@ -116,7 +116,7 @@ class _ChangePasswordSheetState extends State<ChangePasswordSheet> {
             const SizedBox(height: AppSpacing.xl),
             _SheetTextField(
               controller: _newPasswordController,
-              hint: 'New Password',
+              hint: 'Kata Sandi Baru',
               obscureText: _obscureNew,
               onToggleVisibility: () =>
                   setState(() => _obscureNew = !_obscureNew),
@@ -124,14 +124,14 @@ class _ChangePasswordSheetState extends State<ChangePasswordSheet> {
             const SizedBox(height: AppSpacing.md),
             _SheetTextField(
               controller: _confirmPasswordController,
-              hint: 'Confirm Password',
+              hint: 'Konfirmasi Kata Sandi',
               obscureText: _obscureConfirm,
               onToggleVisibility: () =>
                   setState(() => _obscureConfirm = !_obscureConfirm),
             ),
             const SizedBox(height: AppSpacing.xl),
             AppButton(
-              label: 'SAVE',
+              label: 'SIMPAN',
               expand: true,
               isLoading: _isLoading,
               background: AppColors.accentSoft,
