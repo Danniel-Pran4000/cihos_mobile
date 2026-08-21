@@ -6,9 +6,6 @@ import '../../../../core/widgets/image_placeholder.dart';
 import '../../../../core/theme/app_motion.dart';
 
 /// The swipeable promo banner below the greeting.
-///
-/// Falls back to a neutral block per slide until the banner images are
-/// exported from Figma into `assets/images/`.
 class PromoCarousel extends StatefulWidget {
   const PromoCarousel({super.key});
 
@@ -17,14 +14,14 @@ class PromoCarousel extends StatefulWidget {
 }
 
 class _PromoCarouselState extends State<PromoCarousel> {
-  final _controller = PageController(viewportFraction: 0.94);
+  final _controller = PageController();
   int _page = 0;
 
   static const _slides = [
-    'assets/images/promo_1.jpg',
-    'assets/images/promo_2.jpg',
-    'assets/images/promo_3.jpg',
-    'assets/images/promo_4.png',
+    'assets/images/cihos1.jpg',
+    'assets/images/gmcu.jpg',
+    'assets/images/hair skin.png',
+    'assets/images/mri screening.jpg',
   ];
 
   @override
@@ -38,19 +35,31 @@ class _PromoCarouselState extends State<PromoCarousel> {
     return Column(
       children: [
         SizedBox(
-          height: 195,
+          height: 200,
           child: PageView.builder(
             controller: _controller,
             itemCount: _slides.length,
             onPageChanged: (index) => setState(() => _page = index),
-            itemBuilder: (context, index) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 3),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(6),
+            itemBuilder: (context, index) => Container(
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.border, width: 1),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.accentSoft.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Center(
                 child: Image.asset(
                   _slides[index],
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
                   width: double.infinity,
+                  height: double.infinity,
                   errorBuilder: (context, error, stackTrace) =>
                       const ImagePlaceholder(
                         icon: Icons.local_offer_outlined,
@@ -70,11 +79,11 @@ class _PromoCarouselState extends State<PromoCarousel> {
                 duration: AppMotion.fast,
                 margin: const EdgeInsets.symmetric(horizontal: 3),
                 height: 6,
-                width: i == _page ? 18 : 6,
+                width: i == _page ? 20 : 6,
                 decoration: BoxDecoration(
                   color: i == _page
-                      ? AppColors.accentSoft
-                      : AppColors.accentSoft.withValues(alpha: 0.3),
+                      ? AppColors.primary
+                      : AppColors.accentSoft.withValues(alpha: 0.25),
                   borderRadius: BorderRadius.circular(AppRadius.xs),
                 ),
               ),

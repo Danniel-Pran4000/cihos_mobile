@@ -9,7 +9,6 @@ import '../../../core/widgets/screen_header.dart';
 import '../../../core/widgets/textured_background.dart';
 import '../data/health_news_repository.dart';
 import '../domain/health_article.dart';
-import '../../../core/theme/app_elevation.dart';
 import '../../../core/widgets/pressable.dart';
 import '../../../core/widgets/image_placeholder.dart';
 import '../../../core/widgets/staggered_entrance.dart';
@@ -31,20 +30,29 @@ class HealthNewsScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const ScreenHeader(title: 'Info Kesehatan'),
+              const SizedBox(height: AppSpacing.xs),
               Expanded(
                 child: ListView(
                   padding: const EdgeInsets.only(bottom: AppSpacing.xxxl),
                   children: [
+                    // Berita Terbaru Section
                     const _ShelfTitle('Berita Terbaru'),
+                    const SizedBox(height: AppSpacing.sm),
                     _Carousel(articles: latest),
-                    const SizedBox(height: AppSpacing.xl),
+                    const SizedBox(height: AppSpacing.xxl),
+
+                    // Lainnya Section
                     const _ShelfTitle('Lainnya'),
+                    const SizedBox(height: AppSpacing.sm),
                     _Carousel(articles: others),
-                    const SizedBox(height: AppSpacing.xl),
+                    const SizedBox(height: AppSpacing.xxl),
+
+                    // Bacaan Anda Section
                     const _ShelfTitle('Bacaan Anda'),
+                    const SizedBox(height: AppSpacing.sm),
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.lg,
+                        horizontal: AppSpacing.xl,
                       ),
                       child: Column(
                         children: [
@@ -77,25 +85,33 @@ class _ShelfTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        0,
-        AppSpacing.lg,
-        AppSpacing.md,
-      ),
-      child: Text(
-        text,
-        style: AppTypography.headingSm.copyWith(
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
-          color: AppColors.accentSoft,
-        ),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+      child: Row(
+        children: [
+          Container(
+            width: 4,
+            height: 18,
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: AppTypography.headingMd.copyWith(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// A horizontally swipeable strip of article cards.
+/// A horizontally swipeable strip of article cards with proper spacing.
 class _Carousel extends StatelessWidget {
   const _Carousel({required this.articles});
 
@@ -104,12 +120,15 @@ class _Carousel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 210,
+      height: 255,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xl,
+          vertical: 4,
+        ),
         itemCount: articles.length,
-        separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.xl),
+        separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.lg),
         itemBuilder: (context, index) => StaggeredEntrance(
           index: index,
           child: Pressable(
@@ -129,59 +148,85 @@ class _CarouselCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 253,
+    return Container(
+      width: 250,
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.accentSoft.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AppRadius.xs),
-            child: SizedBox(
-              height: 132,
-              width: double.infinity,
-              child: _Cover(article: article),
-            ),
+          SizedBox(
+            height: 120,
+            width: double.infinity,
+            child: _Cover(article: article),
           ),
-          Expanded(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(AppRadius.xs),
-                boxShadow: AppElevation.level2,
-              ),
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(AppRadius.xs),
-                ),
-                padding: const EdgeInsets.all(AppSpacing.sm),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Expanded(
-                      child: Text(
-                        article.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTypography.bodySm.copyWith(
-                          fontSize: 15,
-                          height: 1.25,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.accentSoft,
-                        ),
-                      ),
+                    const Icon(
+                      Icons.calendar_today_outlined,
+                      size: 11,
+                      color: AppColors.textTertiary,
                     ),
+                    const SizedBox(width: 4),
                     Text(
                       DateFormat('dd MMM yyyy', 'id_ID').format(article.date),
                       style: AppTypography.bodySm.copyWith(
                         fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.accentSoft,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textTertiary,
                       ),
                     ),
                   ],
                 ),
-              ),
+                const SizedBox(height: 4),
+                Text(
+                  article.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.bodySm.copyWith(
+                    fontSize: 13.5,
+                    height: 1.25,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Baca Selengkapnya',
+                      style: AppTypography.bodySm.copyWith(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 3),
+                    const Icon(
+                      Icons.arrow_forward_rounded,
+                      size: 13,
+                      color: AppColors.primary,
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ],
@@ -190,7 +235,7 @@ class _CarouselCard extends StatelessWidget {
   }
 }
 
-/// A saved read: thumbnail left, headline and "Baca Selengkapnya" right.
+/// A saved read row: thumbnail left, headline and "Baca Selengkapnya" right.
 class _ReadingRow extends StatelessWidget {
   const _ReadingRow({required this.article});
 
@@ -198,66 +243,90 @@ class _ReadingRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
+    return Container(
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadius.sm),
-        boxShadow: AppElevation.level2,
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.accentSoft.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(AppRadius.sm),
-        ),
-        padding: const EdgeInsets.all(7),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(AppRadius.xs),
-              child: SizedBox(
-                width: 138,
-                height: 79,
-                child: _Cover(article: article),
-              ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: SizedBox(
+              width: 110,
+              height: 85,
+              child: _Cover(article: article),
             ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    article.title,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTypography.bodySm.copyWith(
-                      fontSize: 14,
-                      height: 1.25,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.accentSoft,
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.calendar_today_outlined,
+                      size: 11,
+                      color: AppColors.textTertiary,
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    DateFormat('dd MMM yyyy', 'id_ID').format(article.date),
-                    style: AppTypography.bodySm.copyWith(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.accentSoft,
+                    const SizedBox(width: 4),
+                    Text(
+                      DateFormat('dd MMMM yyyy', 'id_ID').format(article.date),
+                      style: AppTypography.bodySm.copyWith(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textTertiary,
+                      ),
                     ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  article.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.bodySm.copyWith(
+                    fontSize: 13.5,
+                    height: 1.3,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
                   ),
-                  Text(
-                    'Baca Selengkapnya!',
-                    style: AppTypography.bodySm.copyWith(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.accentSoft,
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Baca Selengkapnya',
+                      style: AppTypography.bodySm.copyWith(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                    const SizedBox(width: 3),
+                    const Icon(
+                      Icons.arrow_forward_rounded,
+                      size: 13,
+                      color: AppColors.primary,
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
