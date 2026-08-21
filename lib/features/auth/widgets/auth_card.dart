@@ -55,19 +55,11 @@ class _AuthCardState extends State<AuthCard>
     final illustrationHeight =
         widget.illustrationWidth / RegistrationIllustration.aspectRatio;
 
-    return AnimatedBuilder(
-      animation: _curve,
-      builder: (context, child) {
-        return Transform.scale(
-          // Grow into place from slightly smaller.
-          scale: 0.92 + (0.08 * _curve.value.clamp(0.0, 1.2)),
-          child: Opacity(
-            opacity: _controller.value.clamp(0.0, 1.0),
-            child: child,
-          ),
-        );
-      },
-      child: Padding(
+    return ScaleTransition(
+      scale: Tween<double>(begin: 0.94, end: 1.0).animate(_curve),
+      child: FadeTransition(
+        opacity: _controller,
+        child: Padding(
         // Leaves room for the part of the artwork above the card.
         padding: EdgeInsets.only(top: illustrationHeight - _overlap),
         child: Stack(
@@ -87,8 +79,9 @@ class _AuthCardState extends State<AuthCard>
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 class _CardBody extends StatelessWidget {
